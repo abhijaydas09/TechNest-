@@ -1,0 +1,266 @@
+Experiment 2
+System Architecture, Database Schema, Process Flow & Technology
+Stack
+Name: Abhijay Das | Roll No: 49
+Course: E-Commerce & E-Business | VESIT, Mumbai
+1. System Architecture Design
+1.1 Architecture Overview
+TechNest follows a Three-Tier Architecture Model that cleanly separates the system into
+three independent layers. This design promotes modularity, scalability, and easier
+maintenance.
+•
+•
+•
+•React.js with Tailwind CSS for dynamic, responsive UI
+Manages user interactions: browse, search, filter, cart, checkout
+Communicates with backend exclusively via REST APIs (JSON over
+HTTPS)
+State management using React Context API / Redux
+Application Layer•
+•
+•
+•
+•
+•Java 17 + Spring Boot 3.x as the core backend framework
+Spring Web MVC handles REST API routing and controllers
+Spring Security + JWT manages authentication and authorization
+Spring Data JPA (Hibernate) as the ORM layer
+Business logic: order processing, inventory updates, payment handling
+Razorpay Java SDK integrated for payment gateway
+Data Layer•
+•
+•
+•
+•PostgreSQL (relational database) for structured data storage
+Tables: users, products, categories, orders, order_items, reviews
+Hibernate manages entity mapping and schema generation
+Connection pooling via HikariCP for optimal performance
+Supabase (cloud PostgreSQL) for production deployment
+Presentation
+Layer
+1.2 Architecture Flow
+The client (React frontend) sends HTTP requests to the Spring Boot REST API. The API
+layer authenticates the request via JWT, applies business logic, and communicates with the
+PostgreSQL database using JPA repositories. Responses are returned as JSON payloads to
+the frontend.
+Frontend (React + Tailwind) → REST API (Spring Boot) → JPA / Hibernate →
+PostgreSQL (Supabase)
+2. Technology Stack Selection
+Page 1TechNest – E-Commerce & E-Business Lab | Experiment 2
+LayerTechnologyVersionPurpose
+FrontendReact.js18.xComponent-based dynamic UI
+StylingTailwind CSS3.xUtility-first responsive design
+BackendJava17 (LTS)Core backend programming
+language
+FrameworkSpring Boot3.xREST API and app configuration
+API LayerSpring Web MVC3.xHTTP routing and controllers
+SecuritySpring Security + JWT3.xAuth, role-based access control
+ORMHibernate / Spring Data JPA3.xDatabase entity mapping
+DatabasePostgreSQL15.xRelational data storage
+DB HostingSupabaseCloudManaged PostgreSQL in cloud
+PaymentRazorpay Java SDKLatestSandbox payment integration
+Build ToolMaven3.9Dependency & build management
+Version ControlGit & GitHub-Source code management
+Frontend DeployVercelCloudStatic frontend hosting
+Backend DeployRailwayCloudSpring Boot app hosting
+2.1 Reasons for Technology Selection
+•
+•
+•
+•
+•
+•
+Java + Spring Boot is an industry-standard, enterprise-grade backend widely used in
+production e-commerce systems.
+Spring Security provides robust, battle-tested authentication and authorization out of
+the box.
+PostgreSQL is a powerful relational database, ideal for structured e-commerce data
+with complex relationships.
+Hibernate/JPA simplifies database operations using Java objects, eliminating raw
+SQL for standard operations.
+React.js enables a fast, interactive frontend with reusable components and efficient
+DOM rendering.
+Railway and Vercel offer simple, low-cost deployment pipelines with GitHub
+integration.
+3. Database Schema Design
+TechNest uses PostgreSQL with a fully normalized relational schema. The following tables
+are defined:
+3.1 users Table
+ColumnData TypeConstraintsDescription
+idBIGINTPK,
+AUTO_INCREMENTUnique user identifier
+Page 2TechNest – E-Commerce & E-Business Lab | Experiment 2
+usernameVARCHAR(100)NOT NULLCustomer's display name
+emailVARCHAR(255)NOT NULL, UNIQUELogin email address
+password_hashVARCHAR(255)NOT NULLbcrypt-hashed password
+roleVARCHAR(20)DEFAULT 'USER'USER or ADMIN role
+phoneVARCHAR(15)NULLABLEContact number
+created_atTIMESTAMPDEFAULT NOW()Account creation time
+3.2 categories Table
+ColumnData TypeConstraintsDescription
+idBIGINTPK,
+AUTO_INCREMENTUnique category ID
+nameVARCHAR(100)NOT NULL, UNIQUECategory name (e.g. Laptops)
+descriptionTEXTNULLABLECategory description
+ColumnData TypeConstraintsDescription
+idBIGINTPK,
+AUTO_INCREMENTUnique product ID
+nameVARCHAR(255)NOT NULLProduct name
+brandVARCHAR(100)NOT NULLManufacturer/brand name
+category_idBIGINTFK → categories.idProduct category
+priceDECIMAL(10,2)NOT NULLSelling price
+descriptionTEXTNULLABLEDetailed product description
+image_urlVARCHAR(500)NULLABLEProduct image link
+stockINTDEFAULT 0Available stock quantity
+ratingDECIMAL(3,2)DEFAULT 0.0Average customer rating
+created_atTIMESTAMPDEFAULT NOW()Product listing date
+ColumnData TypeConstraintsDescription
+idBIGINTPK,
+AUTO_INCREMENTUnique order ID
+user_idBIGINTFK → users.idCustomer who placed order
+total_amountDECIMAL(10,2)NOT NULLFinal order total
+statusVARCHAR(30)DEFAULT 'PENDING'PENDING / SHIPPED /
+DELIVERED
+3.3 products Table
+3.4 orders Table
+Page 3TechNest – E-Commerce & E-Business Lab | Experiment 2
+payment_idVARCHAR(100)NULLABLERazorpay payment reference
+payment_statusVARCHAR(20)DEFAULT 'UNPAID'UNPAID / PAID / FAILED
+created_atTIMESTAMPDEFAULT NOW()Order placement timestamp
+3.5 order_items Table
+ColumnData TypeConstraintsDescription
+idBIGINTPK,
+AUTO_INCREMENTUnique order item ID
+order_idBIGINTFK → orders.idParent order reference
+product_idBIGINTFK → products.idProduct purchased
+quantityINTNOT NULLNumber of units ordered
+unit_priceDECIMAL(10,2)NOT NULLPrice at time of purchase
+ColumnData TypeConstraintsDescription
+idBIGINTPK,
+AUTO_INCREMENTUnique review ID
+product_idBIGINTFK → products.idProduct being reviewed
+user_idBIGINTFK → users.idReviewer's user account
+ratingINTCHECK (1–5)Star rating (1 to 5)
+commentTEXTNULLABLEWritten review content
+created_atTIMESTAMPDEFAULT NOW()Review submission date
+3.6 reviews Table
+3.7 Entity Relationships
+•
+•
+•
+•
+•
+One User can place many Orders (1:N)
+One Order can contain many Order Items (1:N)
+One Product belongs to one Category (N:1)
+One Product can appear in many Order Items (1:N)
+One User can write many Reviews; one Product can have many Reviews (1:N each)
+4. Process Flow Diagrams
+4.1 Overall System Flow (Level 0 DFD)
+At the highest level, TechNest interacts with the following external actors:
+Actor
+Interaction with System
+Page 4TechNest – E-Commerce & E-Business Lab | Experiment 2
+CustomerBrowses catalog, manages cart, places orders, tracks delivery
+AdministratorManages products, categories, inventory, and order statuses
+Razorpay GatewayReceives payment requests, returns authorization response
+Email SystemReceives order confirmation trigger, sends email to customer
+Supabase (DB)Persists and retrieves all application data
+4.2 Detailed User Flow (Level 1 DFD)
+User Registration & Login
+1.
+2.
+3.
+4.
+5.
+6.
+User submits registration form with name, email, and password.
+Spring Boot receives the request at POST /api/auth/register.
+Spring Security hashes the password using BCrypt.
+User entity is saved to the users table in PostgreSQL.
+JWT access token is generated and returned to the client.
+Subsequent requests include the token in the Authorization header.
+Product Browsing & Search
+7. User visits the homepage; React fetches GET /api/products.
+8. Spring Boot queries the products table with optional filters (category, brand, price
+range).
+9. Paginated product list is returned as JSON and rendered by React.
+10. User can filter by category, brand, price, or rating in real time.
+Page 5TechNest – E-Commerce & E-Business Lab | Experiment 2
+Cart & Checkout
+11. User clicks 'Add to Cart'; product is stored in React local state / Context.
+12. Cart summary shows itemized list with auto-calculated subtotal and GST.
+13. User clicks 'Checkout'; React calls POST /api/orders to initiate order.
+14. Spring Boot creates an Order record with status PENDING.
+15. Razorpay order is created via the Java SDK; payment UI is presented.
+16. On payment success, Razorpay sends a webhook to POST /api/payment/verify.
+17. Spring Boot verifies the signature, updates order status to PAID and PROCESSING.
+18. Stock is decremented in the products table.
+19. Order confirmation is returned to the React frontend.
+Page 6TechNest – E-Commerce & E-Business Lab | Experiment 2
+5. Key REST API Endpoints
+MethodEndpointDescriptionAuth
+POST/api/auth/registerRegister new userPublic
+POST/api/auth/loginLogin and receive JWTPublic
+GET/api/productsGet all products (with filters)Public
+GET/api/products/{id}Get product detailsPublic
+POST/api/productsAdd new productAdmin
+PUT/api/products/{id}Update productAdmin
+DELET
+E/api/products/{id}Delete productAdmin
+POST/api/ordersPlace new orderUser
+GET/api/orders/myGet current user's ordersUser
+GET/api/admin/ordersGet all ordersAdmin
+Page 7TechNest – E-Commerce & E-Business Lab | Experiment 2
+PATCH/api/admin/orders/{id}Update order statusAdmin
+POST/api/payment/verifyVerify Razorpay payment webhookPublic
+POST/api/reviewsSubmit a product reviewUser
+6. Security and Performance Considerations
+6.1 Security
+•
+•
+•
+•
+•
+•
+All passwords stored as BCrypt hashes — raw passwords never persisted.
+JWT tokens include expiry (15 min access / 7 day refresh) to limit exposure.
+Spring Security enforces role-based access: USER vs ADMIN routes are strictly
+separated.
+Razorpay webhook signature is verified using HMAC-SHA256 before updating order
+status.
+Input validation via Spring's @Valid and Bean Validation annotations prevents
+injection attacks.
+HTTPS enforced on all production endpoints via Railway and Vercel configurations.
+6.2 Performance
+•
+•
+•
+•
+HikariCP connection pooling minimizes database connection overhead.
+Pagination implemented on all list endpoints to avoid large data payloads.
+React lazy loading and code splitting for faster frontend load times.
+Database indexes on frequently queried columns: email, category_id, product name.
+7. Deployment Architecture
+ComponentPlatformDetails
+React FrontendVercelAuto-deploys from GitHub main branch; global
+CDN
+Spring Boot BackendRailwayDockerized Spring Boot app; environment
+variables for secrets
+PostgreSQL DatabaseSupabaseManaged cloud PostgreSQL; connection via
+JDBC URL
+Static AssetsCloudinary (optional)Product image storage and CDN delivery
+Payment GatewayRazorpay SandboxTest mode for development; live keys for
+production
+The React frontend is served from Vercel's global CDN. It communicates with the Spring
+Boot REST API hosted on Railway via HTTPS. The API connects to Supabase PostgreSQL
+using a secure JDBC connection string stored as an environment variable.
+Page 8TechNest – E-Commerce & E-Business Lab | Experiment 2
+8. Conclusion
+The TechNest system architecture is designed as a scalable, secure, and maintainable
+three-tier application. The choice of Java + Spring Boot for the backend brings enterprise-
+grade reliability, robust security via Spring Security, and clean data management through
+Hibernate JPA. PostgreSQL's relational model ensures data integrity across users, products,
+orders, and reviews. The defined process flows, REST API structure, and deployment
+strategy provide a clear and complete roadmap for the development phases that follow in
+subsequent experiments.
